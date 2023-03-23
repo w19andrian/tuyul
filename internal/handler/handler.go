@@ -26,6 +26,13 @@ type Server struct {
 	Port    string
 }
 
+func init() {
+	err := database.NewDatabaseClient(0).Ping(database.Ctx).Err()
+	if err != nil {
+		logger.FatalLogger(err)
+	}
+}
+
 // Handler for "/" path and all the trailing path except the static one
 func (svr *Server) RootHandler(w http.ResponseWriter, r *http.Request) {
 	path := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
@@ -59,10 +66,7 @@ func (svr *Server) MinimeHandler(w http.ResponseWriter, r *http.Request) {
 		db := database.NewDatabaseClient(0)
 		defer db.Close()
 
-		url, err := db.Get(database.Ctx, id).Result()
-		if err != nil {
-			logger.ErrorLogger(err.Error())
-		}
+		url, _ := db.Get(database.Ctx, id).Result()
 
 		if url != "" {
 			customStatusResponse(w, http.StatusInternalServerError, "whoops this is very unlikely to happen :(")
@@ -70,7 +74,7 @@ func (svr *Server) MinimeHandler(w http.ResponseWriter, r *http.Request) {
 			logger.ErrorLogger(fmt.Sprintf("found duplication on key '%v'\n", id))
 			return
 		}
-		err = db.Set(database.Ctx, id, q[0], 365*24*3600*time.Second).Err()
+		err := db.Set(database.Ctx, id, q[0], 365*24*3600*time.Second).Err()
 		if err != nil {
 			logger.ErrorLogger(err.Error())
 		}
@@ -82,16 +86,20 @@ func (svr *Server) MinimeHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
 
-		json.NewEncoder(w).Encode(&ShortUrlResponse{
+		err = json.NewEncoder(w).Encode(&ShortUrlResponse{
 			ShortUrl: full_url,
 			Status:   http.StatusAccepted,
 			Target:   url,
 		})
+		if err != nil {
+			logger.ErrorLogger(err)
+		}
 		logger.AccessLogger(r, http.StatusAccepted)
 		return
 	}
 }
 
+// Handler for "/health" endpoint
 func (svr *Server) HealthHandler(w http.ResponseWriter, r *http.Request) {
 	statusResponse(w, http.StatusOK)
 	logger.AccessLogger(r, http.StatusOK)

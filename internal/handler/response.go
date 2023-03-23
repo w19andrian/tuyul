@@ -11,7 +11,7 @@ type statusResponseMsg struct {
 	Message string `json:"message"`
 }
 
-func statusResponse(w http.ResponseWriter, code int) error {
+func statusResponse(w http.ResponseWriter, code int) {
 	err := json.NewEncoder(w).Encode(&statusResponseMsg{
 		Status:  code,
 		Message: http.StatusText(code),
@@ -19,9 +19,8 @@ func statusResponse(w http.ResponseWriter, code int) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return nil
 }
-func customStatusResponse(w http.ResponseWriter, code int, msg string) error {
+func customStatusResponse(w http.ResponseWriter, code int, msg string) {
 	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(&statusResponseMsg{
@@ -31,5 +30,4 @@ func customStatusResponse(w http.ResponseWriter, code int, msg string) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return nil
 }
