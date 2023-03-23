@@ -11,7 +11,15 @@ type statusResponseMsg struct {
 	Message string `json:"message"`
 }
 
+type ShortUrlResponse struct {
+	ShortUrl string `json:"short_url"`
+	Target   string `json:"target"`
+}
+
 func statusResponse(w http.ResponseWriter, code int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+
 	err := json.NewEncoder(w).Encode(&statusResponseMsg{
 		Status:  code,
 		Message: http.StatusText(code),
@@ -21,8 +29,9 @@ func statusResponse(w http.ResponseWriter, code int) {
 	}
 }
 func customStatusResponse(w http.ResponseWriter, code int, msg string) {
-	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+
 	err := json.NewEncoder(w).Encode(&statusResponseMsg{
 		Status:  code,
 		Message: msg,

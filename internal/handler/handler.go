@@ -13,12 +13,6 @@ import (
 	"github.com/w19andrian/tuyul/pkg/random"
 )
 
-type ShortUrlResponse struct {
-	ShortUrl string `json:"short_url"`
-	Status   int    `json:"status"`
-	Target   string `json:"target"`
-}
-
 type Server struct {
 	Address string
 	MinChar int
@@ -88,7 +82,6 @@ func (svr *Server) MinimeHandler(w http.ResponseWriter, r *http.Request) {
 
 		err = json.NewEncoder(w).Encode(&ShortUrlResponse{
 			ShortUrl: full_url,
-			Status:   http.StatusAccepted,
 			Target:   url,
 		})
 		if err != nil {
