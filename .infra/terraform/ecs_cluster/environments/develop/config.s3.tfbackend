@@ -1,0 +1,3 @@
+bucket = "wmp-tf-state"
+key    = "develop/ops/ecs_cluster/state"
+region = "eu-central-1"
