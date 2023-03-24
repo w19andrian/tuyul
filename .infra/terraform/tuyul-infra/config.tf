@@ -11,7 +11,7 @@ terraform {
       version = "~> 3.4.3"
     }
   }
-  backend "s3" {} # using separate backend file. See environments/$ENVIRONMENT/config.s3.tfbackend
+  backend "s3" {} # using separate backend file. Check environments/$ENVIRONMENT/config.s3.tfbackend
 }
 
 provider "aws" {
