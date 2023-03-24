@@ -1,5 +1,6 @@
 locals {
   cf_secrets_decoded = jsondecode(data.aws_secretsmanager_secret_version.this.secret_string)
+  subdomain          = var.env != "production" ? "${var.app_name}.${local.env_alias}" : var.app_name
 }
 
 data "aws_secretsmanager_secret" "this" {
@@ -17,7 +18,7 @@ data "cloudflare_zone" "this" {
 
 resource "cloudflare_record" "this" {
   zone_id = data.cloudflare_zone.this.id
-  name    = var.app_name
+  name    = local.subdomain
   value   = aws_lb.this.dns_name
   type    = "CNAME"
   ttl     = 3600
