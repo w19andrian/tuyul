@@ -1,14 +1,14 @@
 locals {
-  cf_secrets_decoded = jsondecode(data.aws_secretsmanager_secret_version.this.secret_string)
+  cf_secrets_decoded = jsondecode(data.aws_secretsmanager_secret_version.cf_secrets.secret_string)
   subdomain          = var.env != "production" ? "${var.app_name}.${local.env_alias}" : var.app_name
 }
 
-data "aws_secretsmanager_secret" "this" {
+data "aws_secretsmanager_secret" "cf_secrets" {
   name = "infra/common/cloudflare"
 }
 
-data "aws_secretsmanager_secret_version" "this" {
-  secret_id = data.aws_secretsmanager_secret.this.id
+data "aws_secretsmanager_secret_version" "cf_secrets" {
+  secret_id = data.aws_secretsmanager_secret.cf_secrets.id
 }
 
 data "cloudflare_zone" "this" {

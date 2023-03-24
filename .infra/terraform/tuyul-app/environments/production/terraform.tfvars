@@ -2,6 +2,8 @@ app_name = "tuyul"
 env      = "production"
 owner    = "platform"
 
+infra_state_secret_name = "prod/tf/wmp-infra"
+
 dockerhub_secret_name = "infra/common/docker-hub-creds"
 container_registry    = "w19andrian"
 container_port        = 80

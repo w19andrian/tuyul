@@ -20,14 +20,22 @@ locals {
     production  = "prod"
   }
   env_alias = join("", [for k, v in local.env_map : v if k == var.env])
+
+  core_infra_secrets = jsondecode(data.aws_secretsmanager_secret_version.core_state.secret_string)
 }
 # ====================================================== #
+data "aws_secretsmanager_secret" "core_state" {
+  name = var.infra_state_secret_name
+}
+data "aws_secretsmanager_secret_version" "core_state" {
+  secret_id = data.aws_secretsmanager_secret.core_state.id
+}
 data "terraform_remote_state" "core" {
   backend = "s3"
   config = {
-    bucket = "wmp-tf-state"
-    key    = "${var.env}/ops/ecs_cluster/state"
-    region = var.region
+    bucket = local.core_infra_secrets["bucket"]
+    key    = local.core_infra_secrets["key"]
+    region = local.core_infra_secrets["region"]
   }
 }
 # ====================================================== #

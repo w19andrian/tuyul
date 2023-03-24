@@ -3,15 +3,30 @@ variable "app_name" {
   type        = string
 }
 
+variable "owner" {
+  description = "Owner of this application(department, squad, etc)"
+  type        = string
+}
+
+variable "infra_state_secret_name" {
+  description = "AWS Secret Manager - secret name of core infra Terraform backend"
+  type        = string
+}
+
+variable "cf_secret_name" {
+  description = "AWS Secret Manager - secret name of Cloudflare's credentials"
+  type        = string
+}
+
+variable "dockerhub_secret_name" {
+  description = "AWS Secret Manager - secret name of Docker Hub credentials"
+  type        = string
+}
+
 variable "app_version" {
   description = "version of the app"
   type        = string
   default     = "latest"
-}
-
-variable "owner" {
-  description = "Owner of this application(department, squad, etc)"
-  type        = string
 }
 
 variable "env" {
@@ -66,14 +81,4 @@ variable "lb_deletion_protection_enabled" {
   description = "enable ALB deletion protection"
   type        = string
   default     = false
-}
-
-variable "cf_secret_name" {
-  description = "AWS Secret Manager - secret name of Cloudflare's credentials"
-  type        = string
-}
-
-variable "dockerhub_secret_name" {
-  description = "AWS Secret Manager - secret name of Docker Hub credentials"
-  type        = string
 }
