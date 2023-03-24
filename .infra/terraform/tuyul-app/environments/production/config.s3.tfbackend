@@ -1,0 +1,3 @@
+bucket = "wmp-tf-state"
+key    = "production/app/tuyul/state"
+region = "eu-central-1"
