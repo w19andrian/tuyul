@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -21,10 +22,13 @@ type Server struct {
 }
 
 func init() {
+	log.Println("checking database connection")
 	err := database.NewDatabaseClient(0).Ping(database.Ctx).Err()
 	if err != nil {
+		log.Println("something is wrong with the connection to the database")
 		logger.FatalLogger(err)
 	}
+	log.Println("database is reachable! spinning up the server")
 }
 
 // Handler for "/" path and all the trailing path except the static one
@@ -35,10 +39,10 @@ func (svr *Server) RootHandler(w http.ResponseWriter, r *http.Request) {
 		db := database.NewDatabaseClient(0)
 		defer db.Close()
 
-		url, err := db.Get(database.Ctx, path[0]).Result()
-		if err != nil {
+		url, _ := db.Get(database.Ctx, path[0]).Result()
+		if url == "" {
 			statusResponse(w, http.StatusNotFound)
-			logger.ErrorLogger(err.Error())
+			logger.ErrorLogger(fmt.Printf("%v not found in the database \n", url))
 			logger.AccessLogger(r, http.StatusNotFound)
 			return
 		}
@@ -68,12 +72,12 @@ func (svr *Server) MinimeHandler(w http.ResponseWriter, r *http.Request) {
 			logger.ErrorLogger(fmt.Sprintf("found duplication on key '%v'\n", id))
 			return
 		}
-		err := db.Set(database.Ctx, id, q[0], 365*24*3600*time.Second).Err()
+		err := db.Set(database.Ctx, id, q[0], 168*3600*time.Second).Err()
 		if err != nil {
 			logger.ErrorLogger(err.Error())
 		}
 
-		url, _ = db.Get(database.Ctx, id).Result()
+		res, _ := db.Get(database.Ctx, id).Result()
 
 		full_url := fmt.Sprintf("%v/%v", r.Host, id)
 
@@ -82,7 +86,7 @@ func (svr *Server) MinimeHandler(w http.ResponseWriter, r *http.Request) {
 
 		err = json.NewEncoder(w).Encode(&ShortUrlResponse{
 			ShortUrl: full_url,
-			Target:   url,
+			Target:   res,
 		})
 		if err != nil {
 			logger.ErrorLogger(err)
