@@ -9,16 +9,22 @@ default: help
 
 help:
 	@echo 'Usage:'
-	@echo '		make all		run "make golangci-lint" & "make build-all" '
-	@echo '		make build-all		run "make build" & "make docker"'
-	@echo '		make golangci-lint	run golangci-lint linter'
-	@echo '		make build		build ${APP_NAME} binary'
-	@echo '		make docker		build docker image with "latest" tag'
-	@echo '		make tfvalidate	run terraform validate'
-	@echo '		make tflint		run "make tfvalidate" and tflint linter'
-	@echo '		make tfplan		run terraform plan with development environment values and output it to /dev/null'
-	@echo '		make tfapply	run an interactive "terraform apply" with development environment values'
-	@echo '		make tfdestroy-dev	run "terraform destroy" to destroy development environment infrastructures'
+	@echo '		make all						run "make golangci-lint" & "make build-all" '
+	@echo '		make build-all					run "make build" & "make docker"'
+	@echo '		make golangci-lint				run golangci-lint linter'
+	@echo '		make build						build ${APP_NAME} binary'
+	@echo '		make docker						build docker image with "latest" tag'
+	@echo '		make tfvalidate-infra			run terraform validate (CORE INFRASTRUCTURE)' 
+	@echo '		make tflint-infra				run "make tfvalidate-infra" and "make tflint-infra" linter (CORE INFRASTRUCTURE)' 
+	@echo '		make tfplan-infra				run "make tflint-infra" & "terraform plan" with development environment values (CORE INFRASTRUCTURE)' 
+	@echo '		make tfapply-infra				run an interactive "terraform apply" with development environment values (CORE INFRASTRUCTURE)' 
+	@echo '		make tfdestroy-infra-dev		run "terraform destroy" to destroy development environment infrastructures (CORE INFRASTRUCTURE)'
+	@echo '		make tfvalidate-app				run terraform validate (APP)'
+	@echo '		make tflint-app					run "make tfvalidate-app" and "make tflint-app" linter (APP)'
+	@echo '		make tfplan-app					run "make tflint-app" & "terraform plan" with development environment values (APP)'
+	@echo '		make tfapply-app				run an interactive "terraform apply" with development environment values (APP)'
+	@echo '		make tfdestroy-app-dev			run "terraform destroy" to destroy development environment infrastructures (APP)'
+	@echo '		make clean						clean up build artifacts'
 
 all: golangci-lint build-all
 
@@ -47,7 +53,7 @@ docker:
 	@echo 'found Docker command'
 	docker build -t ${APP_NAME}:latest .
 clean:
-	rm -rf ./bin
+	rm -rf ./bin ${APP_TF_DIR}/{.terraform,plan.out} ${INFRA_TF_DIR}/{.terraform,plan.out}
 
 tflint-app: tfvalidate-app
 	@echo 'Starting preparation for Terraform linter'
