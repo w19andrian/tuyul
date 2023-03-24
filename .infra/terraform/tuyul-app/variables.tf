@@ -67,3 +67,13 @@ variable "lb_deletion_protection_enabled" {
   type        = string
   default     = false
 }
+
+variable "cf_secret_name" {
+  description = "AWS Secret Manager - secret name of Cloudflare's credentials"
+  type        = string
+}
+
+variable "dockerhub_secret_name" {
+  description = "AWS Secret Manager - secret name of Docker Hub credentials"
+  type        = string
+}
