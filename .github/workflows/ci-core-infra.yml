@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "./infra/terraform/tuyul-infra"
+      - ".infra/terraform/tuyul-infra"
   pull_request:
 
 env:
