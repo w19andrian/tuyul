@@ -60,7 +60,7 @@ jobs:
     permissions: write-all
     defaults:
       run:
-        working-directory: ".infra/terraform/${{ vars.APP_NAME }}"
+        working-directory: ".infra/terraform/${{ vars.APP_NAME }}-infra"
     name: plan
     steps:
       - uses: actions/checkout@v3
