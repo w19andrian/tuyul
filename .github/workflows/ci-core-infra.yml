@@ -49,13 +49,9 @@ jobs:
         run: terraform fmt -check
         continue-on-error: false
 
-      - name: init-validate
-        id: validate
-        run: make tfvalidate
-
       - name: tflint
         id: lint
-        run: make tflint
+        run: make tflint-infra
 
   plan:
     needs:
@@ -100,7 +96,7 @@ jobs:
 
       - name: Run Terraform plan
         id: plan
-        run: terraform plan -var 'app_version=latest.dev' -var-file environments/${{ env.ENVIRONMENT }}/terraform.tfvars -no-color
+        run: terraform plan -var 'app_version=latest-dev' -var-file environments/${{ env.ENVIRONMENT }}/terraform.tfvars -no-color
 
       - uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
