@@ -146,9 +146,3 @@ resource "aws_security_group" "this" {
   tags = local.user_def_tags
 
 }
-
-# =============================== #
-resource "aws_ecr_repository" "aws-ecr" {
-  name = var.app_name
-  tags = local.user_def_tags
-}
