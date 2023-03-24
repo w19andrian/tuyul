@@ -9,7 +9,7 @@ on:
 env:
   VERSION: ${{ github.sha }}
   APP_NAME: ${{ vars.APP_NAME }}
-  ENVIRONMENT: development
+  ENVIRONMENT: develop
 
 jobs:
   lint:
