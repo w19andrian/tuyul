@@ -1,0 +1,161 @@
+name: CI Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "./infra/terraform/tuyul-infra"
+  pull_request:
+
+env:
+  VERSION: ${{ github.sha }}
+  APP_NAME: ${{ vars.APP_NAME }}
+  ENVIRONMENT: development
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: lint
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+      - uses: terraform-linters/setup-tflint@v3
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Config Terraform plugin cache
+        run: |
+          echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >~/.terraformrc
+          mkdir --parents ~/.terraform.d/plugin-cache
+
+      - name: Terraform Cache
+        uses: actions/cache@v3
+        env:
+          cache-name: tf-cache
+        with:
+          path: |
+            ~/.terraform.d/plugin-cache
+          key: tf-build-${{ vars.APP_NAME }}-${{ env.cache-name }}-${{ hashFiles('**/.terraform.lock.hcl') }}
+          restore-keys: |
+            tf-build-${{ vars.APP_NAME }}-${{ env.cache-name }}-
+            tf-build-${{ vars.APP_NAME }}-
+
+      - name: Terraform-fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: false
+
+      - name: init-validate
+        id: validate
+        run: make tfvalidate
+
+      - name: tflint
+        id: lint
+        run: make tflint
+
+  plan:
+    needs:
+      - lint
+    runs-on: ubuntu-latest
+    permissions: write-all
+    defaults:
+      run:
+        working-directory: ".infra/terraform/${{ vars.APP_NAME }}"
+    name: plan
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Config Terraform plugin cache
+        run: |
+          echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >~/.terraformrc
+          mkdir --parents ~/.terraform.d/plugin-cache
+
+      - name: Terraform Cache
+        uses: actions/cache@v3
+        env:
+          cache-name: tf-cache
+        with:
+          path: |
+            ~/.terraform.d/plugin-cache
+          key: tf-build-${{ vars.APP_NAME }}-${{ env.cache-name }}-${{ hashFiles('**/.terraform.lock.hcl') }}
+          restore-keys: |
+            tf-build-${{ vars.APP_NAME }}-${{ env.cache-name }}-${{ hashFiles('**/.terraform.lock.hcl') }}
+            tf-build-${{ vars.APP_NAME }}-${{ env.cache-name }}-
+            tf-build-${{ vars.APP_NAME }}-
+
+      - name: Terraform init
+        id: init
+        run: terraform init -backend-config environments/${{ env.ENVIRONMENT }}/config.s3.tfbackend
+
+      - name: Run Terraform plan
+        id: plan
+        run: terraform plan -var 'app_version=latest.dev' -var-file environments/${{ env.ENVIRONMENT }}/terraform.tfvars -no-color
+
+      - uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            <details><summary>Validation Output</summary>
+
+            \`\`\`\n
+            ${{ steps.validate.outputs.stdout }}
+            \`\`\`
+
+            </details>
+
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
