@@ -1,0 +1,42 @@
+name: Build Release & Publish
+
+on:
+  release:
+    types:
+      - released
+  create:
+    tags:
+      - app/v*
+
+env:
+  VERSION: ${{ github.ref_name }}
+  APP_NAME: ${{ vars.APP_NAME }}
+  ENVIRONMENT: production
+
+jobs:
+  build-artifact:
+    runs-on: ubuntu-latest
+    name: build-artifact
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build and push version
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ vars.CONTAINER_REPO }}/${{ vars.APP_NAME }}:${{ env.VERSION }}
+      - name: Build and push latest
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ vars.CONTAINER_REPO }}/${{ vars.APP_NAME }}:latest
