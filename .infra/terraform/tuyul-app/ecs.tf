@@ -1,5 +1,9 @@
 data "aws_secretsmanager_secret" "docker_hub" {
-  name = "infra/common/docker-hub-creds"
+  name = var.dockerhub_secret_name
+}
+
+data "docker_image" "this" {
+  name = local.image_name
 }
 
 resource "aws_ecs_task_definition" "this" {
@@ -11,7 +15,7 @@ resource "aws_ecs_task_definition" "this" {
   container_definitions = jsonencode([
     {
       name  = local.full_app_name
-      image = local.image_name
+      image = data.docker_image.this.repo_digest
       repositoryCredentials = {
         credentialsParameter = data.aws_secretsmanager_secret.docker_hub.arn
       }
@@ -29,9 +33,9 @@ resource "aws_ecs_task_definition" "this" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = "${aws_cloudwatch_log_group.app_logger.id}"
-          awslogs-region        = "${var.region}"
-          awslogs-stream-prefix = "${local.full_app_name}"
+          awslogs-group         = aws_cloudwatch_log_group.app_logger.id
+          awslogs-region        = var.region
+          awslogs-stream-prefix = local.full_app_name
         }
       }
       environment = [

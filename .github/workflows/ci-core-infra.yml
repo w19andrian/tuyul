@@ -4,10 +4,10 @@ on:
   push:
     branches: [main]
     paths:
-      - ".infra/terraform/tuyul-infra/*"
+      - "**tuyul-infra**"
   pull_request:
     paths:
-      - ".infra/terraform/tuyul-infra/*"
+      - "**tuyul-infra**"
 
 env:
   VERSION: ${{ github.sha }}

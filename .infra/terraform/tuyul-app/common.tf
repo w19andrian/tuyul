@@ -6,7 +6,6 @@ locals {
     owner       = var.owner
     version     = var.app_version
   }
-  zone_list     = ["${var.region}a", "${var.region}b", "${var.region}c"]
   full_app_name = "${random_string.suffix.keepers.app_name}-${local.env_alias}-${random_string.suffix.id}"
   user_def_tags = merge(local.default_tags, var.user_tags)
 
