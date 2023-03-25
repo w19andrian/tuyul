@@ -2,10 +2,6 @@ data "aws_secretsmanager_secret" "docker_hub" {
   name = var.dockerhub_secret_name
 }
 
-data "docker_image" "this" {
-  name = local.image_name
-}
-
 resource "aws_ecs_task_definition" "this" {
   family                   = "${var.app_name}-${var.env}"
   requires_compatibilities = ["FARGATE"]
@@ -15,7 +11,7 @@ resource "aws_ecs_task_definition" "this" {
   container_definitions = jsonencode([
     {
       name  = local.full_app_name
-      image = data.docker_image.this.repo_digest
+      image = local.image_name
       repositoryCredentials = {
         credentialsParameter = data.aws_secretsmanager_secret.docker_hub.arn
       }
