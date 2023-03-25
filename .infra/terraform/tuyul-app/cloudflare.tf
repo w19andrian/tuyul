@@ -4,7 +4,7 @@ locals {
 }
 
 data "aws_secretsmanager_secret" "cf_secrets" {
-  name = "infra/common/cloudflare"
+  name = var.cf_secret_name
 }
 
 data "aws_secretsmanager_secret_version" "cf_secrets" {

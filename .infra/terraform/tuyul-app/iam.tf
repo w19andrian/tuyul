@@ -10,7 +10,7 @@ locals {
           "secretsmanager:GetSecretValue"
         ],
         "Resource" : [
-          "${data.aws_secretsmanager_secret.docker_hub.arn}",
+          data.aws_secretsmanager_secret.docker_hub.arn,
         ]
       }
     ]
