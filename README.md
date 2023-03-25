@@ -1,6 +1,20 @@
 # <p style="text-align: center;"> Tuyul </p>
 ## Introduction
 Tuyul is a fast, simple and lightweight URL Shortener service. You can run it as an executable or as a Docker container.
+### Try it Yourself
+```bash
+curl https://tuyul.wmp19.xyz/minime?uri=https://www.github.com/<your Github account here>
+```
+If the request is successful, you will receive a json response
+```json
+# RESPONSE
+{
+    "short_url": "tuyul.wmp19.xyz/a7sdER26",
+    "target": "https://www.github.com/<your Github account here>"
+}
+```
+Now try to open your Github account with the short URL.
+
 
 > **Did you know?** 
 > 
@@ -8,6 +22,7 @@ Tuyul is a fast, simple and lightweight URL Shortener service. You can run it as
 
 - [ Tuyul ](#-tuyul-)
   - [Introduction](#introduction)
+    - [Try it Yourself](#try-it-yourself)
   - [Requirements](#requirements)
   - [Background](#background)
   - [The fun stuff](#the-fun-stuff)
