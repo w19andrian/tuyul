@@ -47,3 +47,7 @@ resource "random_string" "suffix" {
   upper   = false
   special = false
 }
+# ====================================================== #
+output "hostname" {
+  value = "${cloudflare_record.this.name}.${data.cloudflare_zone.this.name}"
+}
