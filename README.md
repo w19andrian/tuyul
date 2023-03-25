@@ -25,6 +25,27 @@ All of those are deployed on AWS. Specifically, Amazon ECS for the app and Amazo
 ## The fun stuff
 In this section we will try deploy this project and all of the dependencies for `develop` environment on AWS.
 ### Preparation
+>IMPORTANT !!!
+>
+>Build-push the image & deploy the infrastructure first before start deploying the app
+#### Build Docker Image & Push to Docker Hub
+1. export these environment variables
+```bash
+export APP_NAME=tuyul
+export ENVIRONMENT=develop
+```
+2. start build the container image
+```bash
+make docker
+```
+3. tag the recently created image
+```bash
+docker tag tuyul:latest somerepo/tuyul:latest
+```
+4. push the image
+```bash
+docker push somerepo/tuyul:latest
+```
 #### Deploy the Infrastructure
 1. Open  `.infra/terraform/tuyul-infra/environments/develop/config.s3.backend` and change this values
 ```bash
@@ -32,16 +53,16 @@ bucket = "some-tf-state" # Bucket name for storing Terraform state
 key    = "develop/infra/core/state" # Object name for the Terraform state inside the bucket
 region = "eu-central-1" # AWS region where the bucket resides
 ```
-2. export these environment variables
+1. export these environment variables
 ```bash
 export APP_NAME=tuyul
 export ENVIRONMENT=develop
 ```
-3. Run some validation test and plan
+1. Run some validation test and plan
 ```bash
 make tfplan-infra
 ```
-4. If there is no error, deploy the infrastructure
+1. If there is no error, deploy the infrastructure
 ```bash
 make tfapply-infra
 ```
@@ -55,14 +76,14 @@ Once the infrastructure's deployment is done, we can start to deploy the app.
     "account_id": "asd2424jfj204"
 }
 ```
-2. Create a secret in `AWS Secret Manager` to store `Docker Hub`'s credentials with JSON format
+1. Create a secret in `AWS Secret Manager` to store `Docker Hub`'s credentials with JSON format
 ```json
 {
     "username": "yourdockerhub",
     "password": "yourNo7$0s7roN9P4sSWorD"
 }
 ```
-3. Remember the step to modify infrastructure's Terraform backend in `.infra/terraform/tuyul-infra/environments/develop/config.s3.backend` ? Create a secret in `AWS Secret Manager` to store the information of that backend with this JSON format. Don't forget to name it specifically for each environment.
+1. Remember the step to modify infrastructure's Terraform backend in `.infra/terraform/tuyul-infra/environments/develop/config.s3.backend` ? Create a secret in `AWS Secret Manager` to store the information of that backend with this JSON format. Don't forget to name it specifically for each environment.
 ```json
 {
     "bucket": "some-tf-state",
@@ -70,7 +91,7 @@ Once the infrastructure's deployment is done, we can start to deploy the app.
     "region": "eu-central-1" 
 }
 ```
-4. Open `.infra/terraform/tuyul-app/environments/develop/terraform.tfvars` and start putting on some values to some variables
+1. Open `.infra/terraform/tuyul-app/environments/develop/terraform.tfvars` and start putting on some values to some variables
 ```bash
 app_name = "tuyul" ## DON'T CHANGE THIS
 env      = "develop" ## DON'T CHANGE THIS
