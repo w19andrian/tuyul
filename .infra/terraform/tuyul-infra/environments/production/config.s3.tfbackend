@@ -1,0 +1,3 @@
+bucket = "wmp-tf-state"
+key    = "production/ops/wmp-infra/state"
+region = "eu-central-1"

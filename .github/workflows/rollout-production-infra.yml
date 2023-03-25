@@ -1,0 +1,60 @@
+name: Rollout Production Infrastructure
+
+on:
+  release:
+    types:
+      - released
+  create:
+    tags:
+      - infra/v*
+
+env:
+  VERSION: ${{ github.ref_name }}
+  APP_NAME: ${{ vars.APP_NAME }}
+  ENVIRONMENT: production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .infra/terraform/${{ vars.APP_NAME }}
+    name: deploy-package
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: hashicorp/setup-terraform@v2
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Config Terraform plugin cache
+        run: |
+          echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >~/.terraformrc
+          mkdir --parents ~/.terraform.d/plugin-cache
+
+      - name: Terraform Cache
+        uses: actions/cache@v3
+        env:
+          cache-name: tf-cache
+        with:
+          path: |
+            ~/.terraform.d/plugin-cache
+          key: tf-build-${{ vars.APP_NAME }}-${{ env.cache-name }}-${{ hashFiles('**/.terraform.lock.hcl') }}
+          restore-keys: |
+            tf-build-${{ vars.APP_NAME }}-${{ env.cache-name }}-
+            tf-build-${{ vars.APP_NAME }}-
+
+      - name: Terraform init
+        id: init
+        run: terraform init -backend-config environments/${{ env.ENVIRONMENT }}/config.s3.tfbackend
+
+      - name: Run Terraform plan
+        id: plan
+        run: terraform plan -var-file environments/${{ env.ENVIRONMENT }}/terraform.tfvars -out ./plan.out -no-color
+
+      - name: Terraform apply
+        id: tf-apply
+        run: terraform apply ./plan.out
