@@ -23,7 +23,7 @@ type Server struct {
 
 func init() {
 	log.Println("checking database connection")
-	err := database.NewDatabaseClient(0).Ping(database.Ctx).Err()
+	err := database.NewDatabaseClusterClient().Ping(database.Ctx).Err()
 	if err != nil {
 		log.Println("something is wrong with the connection to the database")
 		logger.FatalLogger(err)
@@ -36,7 +36,8 @@ func (svr *Server) RootHandler(w http.ResponseWriter, r *http.Request) {
 	path := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
 
 	if len(path) == 1 && (len(path[0]) >= svr.MinChar && len(path[0]) <= svr.MaxChar) {
-		db := database.NewDatabaseClient(0)
+
+		db := database.NewDatabaseClusterClient()
 		defer db.Close()
 
 		url, _ := db.Get(database.Ctx, path[0]).Result()
@@ -61,7 +62,7 @@ func (svr *Server) MinimeHandler(w http.ResponseWriter, r *http.Request) {
 		// create random string between MinChar to MaxChar
 		id := random.String(rand.Intn(svr.MaxChar-svr.MinChar) + svr.MinChar)
 
-		db := database.NewDatabaseClient(0)
+		db := database.NewDatabaseClusterClient()
 		defer db.Close()
 
 		url, _ := db.Get(database.Ctx, id).Result()
@@ -72,12 +73,25 @@ func (svr *Server) MinimeHandler(w http.ResponseWriter, r *http.Request) {
 			logger.ErrorLogger(fmt.Sprintf("found duplication on key '%v'\n", id))
 			return
 		}
-		err := db.Set(database.Ctx, id, q[0], 168*3600*time.Second).Err()
+		err := db.Set(database.Ctx, id, q[0], 720*3600*time.Second).Err()
 		if err != nil {
 			logger.ErrorLogger(err.Error())
+			statusResponse(w, http.StatusInternalServerError)
+			return
 		}
 
-		res, _ := db.Get(database.Ctx, id).Result()
+		res, err := db.Get(database.Ctx, id).Result()
+		if err != nil {
+			logger.ErrorLogger(err)
+			statusResponse(w, http.StatusInternalServerError)
+			return
+		}
+
+		if res == "" {
+			logger.ErrorLogger(fmt.Printf("%v has an empty value \n", id))
+			statusResponse(w, http.StatusInternalServerError)
+			return
+		}
 
 		full_url := fmt.Sprintf("%v/%v", r.Host, id)
 
