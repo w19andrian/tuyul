@@ -4,7 +4,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - ".infra/terraform/tuyul-infra/*"
   pull_request:
+    paths-ignore:
+      - ".infra/terraform/tuyul-infra/*"
 
 env:
   VERSION: ${{ github.sha }}

@@ -4,7 +4,7 @@ on:
   release:
     types:
       - released
-  create:
+  push:
     tags:
       - infra/v*
 
