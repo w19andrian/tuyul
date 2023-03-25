@@ -1,11 +1,12 @@
-name: Release Branch Chores
+name: Infra Release Branch Chores
 
 on:
   pull_request:
     types:
       - opened
     branches:
-      - "releases/app/**"
+      - "releases/infra/**"
+    paths: [".infra/terraform/tuyul-infra/**"]
 
 env:
   VERSION: ${{ github.ref_name }}
@@ -13,18 +14,6 @@ env:
   ENVIRONMENT: production
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    name: lint
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-
-      - name: run-linter
-        run: make golangci-lint
-
   tf-lint:
     runs-on: ubuntu-latest
     name: lint
@@ -77,7 +66,7 @@ jobs:
     permissions: write-all
     defaults:
       run:
-        working-directory: ".infra/terraform/${{ vars.APP_NAME }}-app"
+        working-directory: ".infra/terraform/${{ vars.APP_NAME }}-infra"
     name: plan
     steps:
       - uses: actions/checkout@v3
@@ -113,7 +102,7 @@ jobs:
 
       - name: Run Terraform plan
         id: plan
-        run: terraform plan -var 'app_version=latest.alpha' -var-file environments/${{ env.ENVIRONMENT }}/terraform.tfvars -no-color
+        run: terraform plan -var 'app_version=latest' -var-file environments/${{ env.ENVIRONMENT }}/terraform.tfvars -no-color
 
       - uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
