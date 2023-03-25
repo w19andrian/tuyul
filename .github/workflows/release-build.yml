@@ -4,9 +4,9 @@ on:
   release:
     types:
       - released
-  create:
+  push:
     tags:
-      - app/v*
+      - "v**"
 
 env:
   VERSION: ${{ github.ref_name }}
