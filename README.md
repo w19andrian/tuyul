@@ -126,7 +126,7 @@ make tfplan-app
 make tfapply-app
 ```
 ## Tech Spec
-Please note that this app
+
 ### Endpoints
 `GET` `/minime`
 
@@ -150,7 +150,7 @@ Health check endpoint
 
 **Query Params**
 
->\-
+> \-
 
 **Response**
 ```json
