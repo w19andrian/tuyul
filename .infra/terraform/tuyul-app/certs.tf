@@ -1,5 +1,5 @@
 locals {
-  tld_common_name = var.env != "production" ? "*.${local.env_alias}.${data.cloudflare_zone.this.name}" : data.cloudflare_zone.this.name
+  tld_common_name = var.env != "production" ? "*.${local.env_alias}.${data.cloudflare_zone.this.name}" : "*.${data.cloudflare_zone.this.name}"
 }
 resource "tls_private_key" "private_key" {
   algorithm = "RSA"
