@@ -1,6 +1,7 @@
-app_name = "tuyul"
-env      = "develop"
-owner    = "platform"
+app_name    = "tuyul"
+env         = "develop"
+owner       = "platform"
+app_version = "latest-dev"
 
 infra_state_secret_name = "dev/tf/wmp-infra"
 
