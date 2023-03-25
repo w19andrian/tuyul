@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: .infra/terraform/${{ vars.APP_NAME }}
+        working-directory: .infra/terraform/${{ vars.APP_NAME }}-app
     name: deploy-package
     steps:
       - uses: actions/checkout@v3
