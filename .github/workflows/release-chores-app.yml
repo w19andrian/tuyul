@@ -6,7 +6,6 @@ on:
       - opened
     branches:
       - "releases/app/**"
-    paths-ignore: [".infra/terraform/tuyul-infra/**"]
 
 env:
   VERSION: ${{ github.ref_name }}
