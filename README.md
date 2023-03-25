@@ -6,6 +6,18 @@ Tuyul is a fast, simple and lightweight URL Shortener service. You can run it as
 > 
 > The word `Tuyul` came from a mythical creature from Indonesian folklore. Known for their small size, they will do their master's bidding to steal goods from the community (relax, this app won't steal anything. I promise :) )
 
+- [ Tuyul ](#-tuyul-)
+  - [Introduction](#introduction)
+  - [Requirements](#requirements)
+  - [Background](#background)
+  - [The fun stuff](#the-fun-stuff)
+    - [Preparation](#preparation)
+      - [Build Docker Image \& Push to Docker Hub](#build-docker-image--push-to-docker-hub)
+      - [Deploy the Infrastructure](#deploy-the-infrastructure)
+    - [Deploy the App](#deploy-the-app)
+  - [Tech Spec](#tech-spec)
+    - [Endpoints](#endpoints)
+
 ## Requirements
 - Go 1.20+
 - Redis
